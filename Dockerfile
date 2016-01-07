@@ -1,9 +1,18 @@
-FROM centos:7
+#FROM centos:7
+FROM eeacms/centos:7s
 MAINTAINER "Vitalie Maldur" <vitalie.maldur@eaudeweb.ro>
 MAINTAINER "Alin Voinea" <alin.voinea@eaudeweb.ro>
 
 ENV UID 500
 ENV USER apache
+ENV PYTHON python
+
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.4 && \
+    pip3 install chaperone
+
+COPY chaperone.conf     /etc/chaperone.d/chaperone.conf
+COPY conf.d/virtual-host.conf /etc/httpd/conf/
+COPY conf.d/httpd.conf /etc/httpd/conf/
 
 RUN useradd -u $UID -m -s /bin/bash $USER
 RUN yum -y updateinfo
@@ -13,15 +22,11 @@ RUN yum -y install httpd \
   mod_ssl
 
 # Cleanup cache
-RUN yum clean all
+RUN yum clean all; rm -rf /tmp/* /var/tmp/*
 
-RUN chown -R $UID:$UID /var/www
+RUN chown -R $UID:$UID /var/log /etc/httpd 
 
-EXPOSE 80
+EXPOSE 8080
 
-ADD run-httpd.sh /run-httpd.sh
-RUN chmod -v +x /run-httpd.sh
-COPY reload.sh  /bin/reload
-RUN chmod a+x /bin/reload
-
-CMD ["/run-httpd.sh"]
+ENTRYPOINT ["/usr/bin/chaperone"]
+#CMD ["--user", "apache"]
