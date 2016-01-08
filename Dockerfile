@@ -24,9 +24,9 @@ RUN yum -y install httpd \
 # Cleanup cache
 RUN yum clean all; rm -rf /tmp/* /var/tmp/*
 
-RUN chown -R $UID:$UID /var/log /etc/httpd 
+RUN chown -R $UID:$UID /var/log /etc/httpd /run/httpd
 
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/chaperone"]
-#CMD ["--user", "apache"]
+CMD ["--user", "apache"]
